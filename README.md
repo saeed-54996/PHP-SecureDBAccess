@@ -1,2 +1,2 @@
 # PHP-SecureDBAccess
-PHP-SecureDataBaseAccess: Robust PHP class for secure MySQLi interactions. Features prepared statements, dynamic type detection, and a user-friendly interface for safe, efficient database handling.
+PHP-SecureDataBaseAccess: is a secure, robust PHP class that enhances database interactions using the MySQLi extension. It prioritizes security with prepared statements to prevent SQL injection and features dynamic parameter type detection for flexible query execution. Designed for simplicity and efficiency, this class offers an easy-to-use interface that is ideal for any PHP project requiring secure and reliable database handling.
