@@ -24,7 +24,7 @@ Here's how to use the Database class in your project:
 
 1. **Include the Class Manually**
    ```php
-   require_once 'path/to/Database.php';
+   require_once 'path/to/db.php';
 2. **Create Database Instance**
    ```php
    $db = new Database();
