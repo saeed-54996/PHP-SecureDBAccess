@@ -1,4 +1,5 @@
 <?php
+
 class Database {
     private $connection;
     private $config;
@@ -18,18 +19,20 @@ class Database {
         
         // Handle connection errors
         if ($this->connection->connect_error) {
-            die("Connection failed: " . $this->connection->connect_error);
+            throw new Exception("Connection failed: " . $this->connection->connect_error);
         }
 
         // Set the character set to utf8mb4 for Unicode support
-        $this->connection->set_charset('utf8mb4');
+        if (!$this->connection->set_charset('utf8mb4')) {
+            throw new Exception("Error loading character set utf8mb4: " . $this->connection->error);
+        }
     }
 
     public function q($sql, $params = []) {
         // Prepare the SQL statement
         $stmt = $this->connection->prepare($sql);
         if ($stmt === false) {
-            die('MySQL prepare error: ' . $this->connection->error);
+            throw new Exception('MySQL prepare error: ' . $this->connection->error);
         }
 
         // Bind parameters if any
@@ -43,7 +46,7 @@ class Database {
 
         // Handle execution errors
         if ($stmt->error) {
-            die('Execute error: ' . $stmt->error);
+            throw new Exception('Execute error: ' . $stmt->error);
         }
 
         // Fetch the result
@@ -57,19 +60,23 @@ class Database {
     private function getParamTypes($params) {
         $types = '';
         foreach ($params as $param) {
-            switch (gettype($param)) {
-                case 'integer':
-                    $types .= 'i'; // Integer
-                    break;
-                case 'double':
-                    $types .= 'd'; // Double
-                    break;
-                case 'string':
-                    $types .= 's'; // String
-                    break;
-                default:
-                    $types .= 'b'; // Blob and other types
-                    break;
+            if (is_null($param)) {
+                $types .= 's'; // Use 's' for NULL to be bound as NULL
+            } else {
+                switch (gettype($param)) {
+                    case 'integer':
+                        $types .= 'i'; // Integer
+                        break;
+                    case 'double':
+                        $types .= 'd'; // Double
+                        break;
+                    case 'string':
+                        $types .= 's'; // String
+                        break;
+                    default:
+                        $types .= 'b'; // Blob and other types
+                        break;
+                }
             }
         }
         return $types;
@@ -77,6 +84,8 @@ class Database {
 
     public function __destruct() {
         // Close the database connection when the object is destroyed
-        $this->connection->close();
+        if ($this->connection) {
+            $this->connection->close();
+        }
     }
 }
