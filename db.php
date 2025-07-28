@@ -7,16 +7,14 @@ class Database {
     public function __construct() {
         // Load configuration settings
         $this->config = require 'config.php';
-        // Establish a database connection
         $this->connect();
     }
 
     private function connect() {
-        // Retrieve database configuration
         $dbConfig = $this->config['database'];
         // Create a new MySQLi instance
         $this->connection = new mysqli($dbConfig['host'], $dbConfig['username'], $dbConfig['password'], $dbConfig['dbname']);
-        
+
         // Handle connection errors
         if ($this->connection->connect_error) {
             throw new Exception("Connection failed: " . $this->connection->connect_error);
@@ -28,8 +26,11 @@ class Database {
         }
     }
 
-    public function q($sql, $params = []) {
-        // Prepare the SQL statement
+    /**
+     * Execute a query with optional parameters
+     * Returns an associative array of results or null
+     */
+    public function q(string $sql, array $params = []) {
         $stmt = $this->connection->prepare($sql);
         if ($stmt === false) {
             throw new Exception('MySQL prepare error: ' . $this->connection->error);
@@ -57,7 +58,10 @@ class Database {
         return $result ? $result->fetch_all(MYSQLI_ASSOC) : null;
     }
 
-    private function getParamTypes($params) {
+    /**
+     * Determine parameter types for bind_param
+     */
+    private function getParamTypes(array $params): string {
         $types = '';
         foreach ($params as $param) {
             if (is_null($param)) {
@@ -80,6 +84,10 @@ class Database {
             }
         }
         return $types;
+    }
+
+    public function lastInsertId(): int {
+        return $this->connection->insert_id;
     }
 
     public function __destruct() {
